@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Gastos Personales</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.25rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+    }
+
+    .dashboard-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .total-title {
+      font-size: 1rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .total-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    button {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 0.875rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-muted);
+      background-color: #f8fafc;
+    }
+
+    tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: #e0e7ff;
+      color: var(--primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Control de Gastos</h1>
+      <p>Administra tus finanzas personales de forma rápida y sencilla</p>
+    </header>
+
+    <div class="dashboard-card">
+      <div>
+        <span class="total-title">Gasto Total Acumulado</span>
+        <div class="total-amount" id="totalGastos">$0.00</div>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+      <!-- Formulario para agregar gasto -->
+      <div class="card">
+        <h2>Nuevo Gasto</h2>
+        <form id="gastoForm">
+          <div class="form-group">
+            <label for="concepto">Concepto</label>
+            <input type="text" id="concepto" required placeholder="Ej. Supermercado">
+          </div>
+
+          <div class="form-group">
+            <label for="monto">Monto ($)</label>
+            <input type="number" id="monto" step="0.01" required placeholder="0.00">
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" required>
+          </div>
+
+          <div class="form-group">
+            <label for="metodo_pago_id">Método de Pago</label>
+            <select id="metodo_pago_id" required>
+              <option value="">Cargando métodos...</option>
+            </select>
+          </div>
+
+          <button type="submit">Registrar Gasto</button>
+        </form>
+      </div>
+
+      <!-- Listado de Gastos -->
+      <div class="card">
+        <h2>Historial de Gastos</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Método</th>
+                <th>Monto</th>
+              </tr>
+            <thead id="tablaGastosBody">
+              <!-- Datos cargados dinámicamente -->
+            </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Establecer la fecha actual por defecto en el formulario
+      document.getElementById('fecha').valueAsDate = new Date();
+
+      cargarMetodosPago();
+      cargarGastos();
+
+      document.getElementById('gastoForm').addEventListener('submit', registrarGasto);
+    });
+
+    async function cargarMetodosPago() {
+      try {
+        const res = await fetch('/api/metodos');
+        const metodos = await res.json();
+        const select = document.getElementById('metodo_pago_id');
+        select.innerHTML = '<option value="">Seleccione método...</option>';
+        metodos.forEach(m => {
+          const option = document.createElement('option');
+          option.value = m.id;
+          option.textContent = m.nombre;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error cargando métodos de pago:', error);
+      }
+    }
+
+    async function cargarGastos() {
+      try {
+        const res = await fetch('/api/gastos');
+        const gastos = await res.json();
+        const tbody = document.getElementById('tablaGastosBody');
+        tbody.innerHTML = '';
+
+        if (gastos.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No hay gastos registrados.</td></tr>`;
+          document.getElementById('totalGastos').textContent = '$0.00';
+          return;
+        }
+
+        let total = 0;
+        gastos.forEach(g => {
+          total += parseFloat(g.monto);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${g.fecha.split('T')[0]}</td>
+            <td>${escapeHtml(g.concepto)}</td>
+            <td><span class="badge">${escapeHtml(g.metodo_pago_nombre)}</span></td>
+            <td><strong>$${Number(g.monto).toFixed(2)}</strong></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('totalGastos').textContent = `$${total.toFixed(2)}`;
+      } catch (error) {
+        console.error('Error cargando gastos:', error);
+      }
+    }
+
+    async function registrarGasto(e) {
+      e.preventDefault();
+      const concepto = document.getElementById('concepto').value;
+      const monto = parseFloat(document.getElementById('monto').value);
+      const fecha = document.getElementById('fecha').value;
+      const metodo_pago_id = parseInt(document.getElementById('metodo_pago_id').value);
+
+      try {
+        const res = await fetch('/api/gastos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ concepto, monto, fecha, metodo_pago_id })
+        });
+
+        if (res.ok) {
+          document.getElementById('gastoForm').reset();
+          document.getElementById('fecha').valueAsDate = new Date();
+          cargarGastos();
+        } else {
+          const err = await res.json();
+          alert('Error: ' + (err.error || 'No se pudo registrar el gasto'));
+        }
+      } catch (error) {
+        console.error('Error al registrar gasto:', error);
+        alert('Error de red al registrar el gasto');
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

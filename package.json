@@ -1,0 +1,12 @@
+{
+  "name": "control-gastos-vercel",
+  "version": "1.0.0",
+  "description": "Aplicación web de Control de Gastos Personales con Node.js, PostgreSQL y Vanilla JS",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
